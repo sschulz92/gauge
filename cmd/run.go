@@ -18,49 +18,53 @@ import (
 	"github.com/getgauge/gauge/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
-	verboseDefault         = false
-	simpleConsoleDefault   = false
-	failedDefault          = false
-	repeatDefault          = false
-	parallelDefault        = false
-	sortDefault            = false
-	installPluginsDefault  = true
-	environmentDefault     = "default"
-	tagsDefault            = ""
-	rowsDefault            = ""
-	strategyDefault        = "lazy"
-	onlyDefault            = ""
-	groupDefault           = -1
-	maxRetriesCountDefault = 1
-	retryOnlyTagsDefault   = ""
-	failSafeDefault        = false
-	skipCommandSaveDefault = false
+	verboseDefault                  = false
+	simpleConsoleDefault            = false
+	failedDefault                   = false
+	repeatDefault                   = false
+	parallelDefault                 = false
+	sortDefault                     = false
+	installPluginsDefault           = true
+	environmentDefault              = "default"
+	tagsDefault                     = ""
+	rowsDefault                     = ""
+	strategyDefault                 = "lazy"
+	onlyDefault                     = ""
+	groupDefault                    = -1
+	maxRetriesCountDefault          = 1
+	retryOnlyTagsDefault            = ""
+	failSafeDefault                 = false
+	skipCommandSaveDefault          = false
+	randomSpecOrderExecutionDefault = false
 
-	verboseName         = "verbose"
-	simpleConsoleName   = "simple-console"
-	failedName          = "failed"
-	repeatName          = "repeat"
-	parallelName        = "parallel"
-	sortName            = "sort"
-	installPluginsName  = "install-plugins"
-	environmentName     = "env"
-	tagsName            = "tags"
-	rowsName            = "table-rows"
-	strategyName        = "strategy"
-	groupName           = "group"
-	maxRetriesCountName = "max-retries-count"
-	retryOnlyTagsName   = "retry-only"
-	streamsName         = "n"
-	onlyName            = "only"
-	failSafeName        = "fail-safe"
-	skipCommandSaveName = "skip-save"
-	scenarioName        = "scenario"
+	verboseName                  = "verbose"
+	simpleConsoleName            = "simple-console"
+	failedName                   = "failed"
+	repeatName                   = "repeat"
+	parallelName                 = "parallel"
+	sortName                     = "sort"
+	installPluginsName           = "install-plugins"
+	environmentName              = "env"
+	tagsName                     = "tags"
+	rowsName                     = "table-rows"
+	strategyName                 = "strategy"
+	groupName                    = "group"
+	maxRetriesCountName          = "max-retries-count"
+	retryOnlyTagsName            = "retry-only"
+	streamsName                  = "n"
+	onlyName                     = "only"
+	failSafeName                 = "fail-safe"
+	skipCommandSaveName          = "skip-save"
+	scenarioName                 = "scenario"
+	randomSpecOrderExecutionName = "random-spec-order"
 )
 
 var overrideRerunFlags = []string{verboseName, simpleConsoleName, machineReadableName, dirName, logLevelName}
@@ -112,6 +116,7 @@ var (
 	skipCommandSave            bool
 	scenarios                  []string
 	scenarioNameDefault        []string
+	randomSpecOrderExecution   bool
 )
 
 func init() {
@@ -144,6 +149,7 @@ func init() {
 	if err != nil {
 		logger.Errorf(false, "Unable to mark '%s' flag as hidden: %s", skipCommandSaveName, err.Error())
 	}
+	f.BoolVarP(&randomSpecOrderExecution, randomSpecOrderExecutionName, "", randomSpecOrderExecutionDefault, "Execute specs in random order")
 
 	f.StringArrayVar(&scenarios, scenarioName, scenarioNameDefault, "Set scenarios for running specs with scenario name")
 }
