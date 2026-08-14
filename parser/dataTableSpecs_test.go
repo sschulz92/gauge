@@ -383,51 +383,72 @@ func TestDefaultTableRowIndecesAreSetForScenariosWithoutTableAccess(t *testing.T
 	}
 
 	firstScenario := firstSpec.Scenarios[0]
-	if firstScenario.SpecDataTableRowIndex != -1 || firstScenario.ScenarioDataTableRowIndex != -1 {
-		t.Errorf(
-			"First scenario should have no tableRowIndex at all, got SpecDataTableRowIndex=%d and ScenarioDataTableRowIndex=%d",
-			firstScenario.SpecDataTableRowIndex,
-			firstScenario.ScenarioDataTableRowIndex,
-		)
+	if firstScenario.Heading.Value != "Scenario with spec data table params" {
+		t.Errorf("Wrong name for third scenario, found name: %v", firstScenario.Heading.Value)
+	}
+	isCorrect, errMessage := verifyTableRowIndeces(firstScenario, 0, -1)
+	if !isCorrect {
+		t.Errorf("%v", errMessage)
 	}
 
 	secondScenario := firstSpec.Scenarios[1]
-	if secondScenario.SpecDataTableRowIndex != 0 || secondScenario.ScenarioDataTableRowIndex != -1 {
-		t.Errorf(
-			"Second scenario should have no ScenarioDataTableRowIndex but SpecDataTableRowIndex, got SpecDataTableRowIndex=%d and ScenarioDataTableRowIndex=%d",
-			secondScenario.SpecDataTableRowIndex,
-			secondScenario.ScenarioDataTableRowIndex,
-		)
+	if secondScenario.Heading.Value != "Scenario with spec and scenario data table params" {
+		t.Errorf("Wrong name for fourth scenario, found name: %v", secondScenario.Heading.Value)
+	}
+	isCorrect, errMessage = verifyTableRowIndeces(secondScenario, 0, 0)
+	if !isCorrect {
+		t.Errorf("%v", errMessage)
 	}
 
 	thirdScenario := firstSpec.Scenarios[2]
-	if thirdScenario.SpecDataTableRowIndex != -1 || thirdScenario.ScenarioDataTableRowIndex != 0 {
-		t.Errorf(
-			"Third scenario should have ScenarioDataTableRowIndex but no SpecDataTableRowIndex, got SpecDataTableRowIndex=%d and ScenarioDataTableRowIndex=%d",
-			thirdScenario.SpecDataTableRowIndex,
-			thirdScenario.ScenarioDataTableRowIndex,
-		)
+	if thirdScenario.Heading.Value != "Scenario without any data table" {
+		t.Errorf("Wrong name for first scenario, found name: %v", thirdScenario.Heading.Value)
+	}
+	isCorrect, errMessage = verifyTableRowIndeces(thirdScenario, -1, -1)
+	if !isCorrect {
+		t.Errorf("%v", errMessage)
 	}
 
 	fourthScenario := firstSpec.Scenarios[3]
-	if fourthScenario.SpecDataTableRowIndex != 0 || fourthScenario.ScenarioDataTableRowIndex != 0 {
-		t.Errorf(
-			"Fourth scenario should have ScenarioDataTableRowIndex and SpecDataTableRowIndex, got SpecDataTableRowIndex=%d and ScenarioDataTableRowIndex=%d",
-			fourthScenario.SpecDataTableRowIndex,
-			fourthScenario.ScenarioDataTableRowIndex,
-		)
+	if fourthScenario.Heading.Value != "Scenario with scenario data table params" {
+		t.Errorf("Wrong name for second scenario, found name: %v", fourthScenario.Heading.Value)
+	}
+	isCorrect, errMessage = verifyTableRowIndeces(fourthScenario, -1, 0)
+	if !isCorrect {
+		t.Errorf("%v", errMessage)
 	}
 
 	secondSpec := actualSpecs[1]
-	if len(secondSpec.Scenarios) != 1 {
-		t.Errorf("Second spec should have 1 scenarios, got %d", len(secondSpec.Scenarios))
+	if len(secondSpec.Scenarios) != 2 {
+		t.Errorf("Second spec should have 2 scenarios, got %d", len(secondSpec.Scenarios))
 	}
 
 	firstScenarioOfSecondSpec := secondSpec.Scenarios[0]
-	if firstScenarioOfSecondSpec.SpecDataTableRowIndex != -1 || firstScenarioOfSecondSpec.ScenarioDataTableRowIndex != -1 {
-		t.Errorf(
-			"First scenario should have no tableRowIndex at all, got: %v", firstScenarioOfSecondSpec,
-		)
+	if firstScenarioOfSecondSpec.Heading.Value != "Scenario with spec data table params" {
+		t.Errorf("Wrong name for first scenario of second spec, found name: %v", firstScenarioOfSecondSpec.Heading.Value)
+	}
+	isCorrect, errMessage = verifyTableRowIndeces(firstScenarioOfSecondSpec, 1, -1)
+	if !isCorrect {
+		t.Errorf("%v", errMessage)
 	}
 
+	secondScenarioOfSecondSpec := secondSpec.Scenarios[1]
+	if secondScenarioOfSecondSpec.Heading.Value != "Scenario with spec and scenario data table params" {
+		t.Errorf("Wrong name for first scenario of second spec, found name: %v", secondScenarioOfSecondSpec.Heading.Value)
+	}
+	isCorrect, errMessage = verifyTableRowIndeces(secondScenarioOfSecondSpec, 1, 0)
+	if !isCorrect {
+		t.Errorf("%v", errMessage)
+	}
+
+}
+
+func verifyTableRowIndeces(scenario *gauge.Scenario, expectedSpecTableRowIndex int, expectedScenarioTableRowIndex int) (bool, string) {
+	if scenario.SpecDataTableRowIndex != expectedSpecTableRowIndex {
+		return false, "SpecTableRowIndex is wrong"
+	}
+	if scenario.ScenarioDataTableRowIndex != expectedScenarioTableRowIndex {
+		return false, "ScenarioTableRowIndex is wrong"
+	}
+	return true, "all good"
 }
