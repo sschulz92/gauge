@@ -329,13 +329,11 @@ func TestDefaultTableRowIndecesAreSetForScenariosWithoutTableAccess(t *testing.T
 			Scenarios: []*gauge.Scenario{
 				{
 					Heading: &gauge.Heading{Value: "Scenario without any data table"},
-					Steps:   []*gauge.Step{{Args: []*gauge.StepArg{{Value: "header", ArgType: gauge.Dynamic, Name: "header"}}}},
-					Span:    &gauge.Span{Start: 5, End: 6},
+					Steps:   []*gauge.Step{{Args: []*gauge.StepArg{{Value: "static value", ArgType: gauge.Static}}}},
 				},
 				{
 					Heading: &gauge.Heading{Value: "Scenario with spec data table params"},
 					Steps:   []*gauge.Step{{Args: []*gauge.StepArg{{Value: "specParam", ArgType: gauge.Dynamic, Name: "specParam"}}}},
-					Span:    &gauge.Span{Start: 5, End: 6},
 				},
 				{
 					Heading: &gauge.Heading{Value: "Scenario with scenario data table params"},
@@ -347,24 +345,20 @@ func TestDefaultTableRowIndecesAreSetForScenariosWithoutTableAccess(t *testing.T
 							0,
 						),
 					},
-					Span: &gauge.Span{Start: 8, End: 12},
 				},
 				{
 					Heading: &gauge.Heading{Value: "Scenario with spec and scenario data table params"},
-					Steps:   []*gauge.Step{{Args: []*gauge.StepArg{{Value: "scenarioParam", ArgType: gauge.Dynamic, Name: "scenarioParam"}}}},
+					Steps:   []*gauge.Step{{Args: []*gauge.StepArg{
+						{Value: "specParam", ArgType: gauge.Dynamic, Name: "specParam"},
+						{Value: "scenarioParam", ArgType: gauge.Dynamic, Name: "scenarioParam"},
+					}}},
 					DataTable: gauge.DataTable{
 						Table: gauge.NewTable(
-							[]string{"scenarioParam", "specParam"},
-							[][]gauge.TableCell{
-								{
-									{Value: "scenarioTableValue", CellType: gauge.Static},
-									{Value: "specTableValue", CellType: gauge.Static},
-								},
-							},
+							[]string{"scenarioParam"},
+							[][]gauge.TableCell{{{Value: "scenarioTableValue", CellType: gauge.Static}}},
 							0,
 						),
 					},
-					Span: &gauge.Span{Start: 8, End: 12},
 				},
 			},
 			DataTable: gauge.DataTable{
@@ -379,13 +373,13 @@ func TestDefaultTableRowIndecesAreSetForScenariosWithoutTableAccess(t *testing.T
 
 	actualSpecs := GetSpecsForDataTableRows(specs, gauge.NewBuildErrors())
 
-	if len(actualSpecs) != 1 {
-		t.Errorf("Expected 1 spec, got %d", len(actualSpecs))
+	if len(actualSpecs) != 2 {
+		t.Errorf("Expected 2 spec, got %d", len(actualSpecs))
 	}
 
 	firstSpec := actualSpecs[0]
 	if len(firstSpec.Scenarios) != 5 {
-		t.Errorf("First spec should have 3 scenarios (1 using spec param + 2 scenario table iterations), got %d", len(firstSpec.Scenarios))
+		t.Errorf("First spec should have 5 scenarios, got %d", len(firstSpec.Scenarios))
 	}
 
 	firstScenario := firstSpec.Scenarios[0]
@@ -401,26 +395,38 @@ func TestDefaultTableRowIndecesAreSetForScenariosWithoutTableAccess(t *testing.T
 	if secondScenario.SpecDataTableRowIndex != 0 || secondScenario.ScenarioDataTableRowIndex != -1 {
 		t.Errorf(
 			"Second scenario should have no ScenarioDataTableRowIndex but SpecDataTableRowIndex, got SpecDataTableRowIndex=%d and ScenarioDataTableRowIndex=%d",
-			firstScenario.SpecDataTableRowIndex,
-			firstScenario.ScenarioDataTableRowIndex,
+			secondScenario.SpecDataTableRowIndex,
+			secondScenario.ScenarioDataTableRowIndex,
 		)
 	}
 
 	thirdScenario := firstSpec.Scenarios[2]
 	if thirdScenario.SpecDataTableRowIndex != -1 || thirdScenario.ScenarioDataTableRowIndex != 0 {
 		t.Errorf(
-			"Second scenario should have ScenarioDataTableRowIndex but no SpecDataTableRowIndex, got SpecDataTableRowIndex=%d and ScenarioDataTableRowIndex=%d",
-			firstScenario.SpecDataTableRowIndex,
-			firstScenario.ScenarioDataTableRowIndex,
+			"Third scenario should have ScenarioDataTableRowIndex but no SpecDataTableRowIndex, got SpecDataTableRowIndex=%d and ScenarioDataTableRowIndex=%d",
+			thirdScenario.SpecDataTableRowIndex,
+			thirdScenario.ScenarioDataTableRowIndex,
 		)
 	}
 
 	fourthScenario := firstSpec.Scenarios[3]
 	if fourthScenario.SpecDataTableRowIndex != 0 || fourthScenario.ScenarioDataTableRowIndex != 0 {
 		t.Errorf(
-			"Second scenario should have ScenarioDataTableRowIndex and SpecDataTableRowIndex, got SpecDataTableRowIndex=%d and ScenarioDataTableRowIndex=%d",
-			firstScenario.SpecDataTableRowIndex,
-			firstScenario.ScenarioDataTableRowIndex,
+			"Fourth scenario should have ScenarioDataTableRowIndex and SpecDataTableRowIndex, got SpecDataTableRowIndex=%d and ScenarioDataTableRowIndex=%d",
+			fourthScenario.SpecDataTableRowIndex,
+			fourthScenario.ScenarioDataTableRowIndex,
+		)
+	}
+
+	secondSpec := actualSpecs[1]
+	if len(secondSpec.Scenarios) != 1 {
+		t.Errorf("Second spec should have 1 scenarios, got %d", len(secondSpec.Scenarios))
+	}
+
+	firstScenarioOfSecondSpec := secondSpec.Scenarios[0]
+	if firstScenarioOfSecondSpec.SpecDataTableRowIndex != -1 || firstScenarioOfSecondSpec.ScenarioDataTableRowIndex != -1 {
+		t.Errorf(
+			"First scenario should have no tableRowIndex at all, got: %v", firstScenarioOfSecondSpec,
 		)
 	}
 
