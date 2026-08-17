@@ -453,3 +453,98 @@ func TestMergeResultWithMesages(t *testing.T) {
 		t.Errorf("Merge data table spec results failed.\n\tWant: %v\n\tGot: %v", want, got)
 	}
 }
+
+func TestMergeResultsWithSpecTableUsedByContextAndScenarioTableDrivenScenarios(t *testing.T) {
+	results := []*result.SpecResult{
+		{
+			ProtoSpec: &gm.ProtoSpec{
+				SpecHeading: "heading",
+				Items: []*gm.ProtoItem{
+					{
+						ItemType: gm.ProtoItem_Table,
+						Table: &gm.ProtoTable{
+							Headers: &gm.ProtoTableRow{Cells: []string{"a"}},
+							Rows:    []*gm.ProtoTableRow{{Cells: []string{"row1"}}},
+						},
+					},
+					{
+						ItemType: gm.ProtoItem_TableDrivenScenario,
+						TableDrivenScenario: &gm.ProtoTableDrivenScenario{
+							Scenario: &gm.ProtoScenario{
+								ScenarioHeading: "scenario",
+								ExecutionStatus: gm.ExecutionStatus_PASSED,
+							},
+							// Expanded because the spec-level context uses
+							// the spec table, but the scenario itself uses
+							// only its own scenario table.
+							IsSpecTableDriven:     false,
+							IsScenarioTableDriven: true,
+							TableRowIndex:         -1,
+							ScenarioTableRowIndex: 0,
+						},
+					},
+				},
+			},
+		},
+		{
+			ProtoSpec: &gm.ProtoSpec{
+				SpecHeading: "heading",
+				Items: []*gm.ProtoItem{
+					{
+						ItemType: gm.ProtoItem_Table,
+						Table: &gm.ProtoTable{
+							Headers: &gm.ProtoTableRow{Cells: []string{"a"}},
+							Rows:    []*gm.ProtoTableRow{{Cells: []string{"row2"}}},
+						},
+					},
+					{
+						ItemType: gm.ProtoItem_TableDrivenScenario,
+						TableDrivenScenario: &gm.ProtoTableDrivenScenario{
+							Scenario: &gm.ProtoScenario{
+								ScenarioHeading: "scenario",
+								ExecutionStatus: gm.ExecutionStatus_PASSED,
+							},
+							IsSpecTableDriven:     false,
+							IsScenarioTableDriven: true,
+							TableRowIndex:         -1,
+							ScenarioTableRowIndex: 1,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	got := mergeResults(results)
+
+	table := got.ProtoSpec.Items[0].Table
+	if len(table.Rows) != 2 {
+		t.Fatalf("expected 2 spec table rows, got %d", len(table.Rows))
+	}
+
+	if gotRow := table.Rows[0].Cells[0]; gotRow != "row1" {
+		t.Errorf("expected first spec table row to be row1, got %q", gotRow)
+	}
+
+	if gotRow := table.Rows[1].Cells[0]; gotRow != "row2" {
+		t.Errorf("expected second spec table row to be row2, got %q", gotRow)
+	}
+
+	for _, item := range got.ProtoSpec.Items {
+		if item.ItemType != gm.ProtoItem_TableDrivenScenario {
+			continue
+		}
+
+		scn := item.TableDrivenScenario
+
+		if scn.TableRowIndex != -1 {
+			t.Errorf("expected TableRowIndex=-1 for scenario-table-only scenario, got %d", scn.TableRowIndex)
+		}
+
+		if !scn.IsSpecTableDriven {
+			if scn.ScenarioTableRowIndex < 0 {
+				t.Errorf("expected valid ScenarioTableRowIndex, got %d", scn.ScenarioTableRowIndex)
+			}
+		}
+	}
+}

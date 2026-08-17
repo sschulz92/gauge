@@ -101,6 +101,11 @@ func mergeResults(results []*result.SpecResult) *result.SpecResult {
 					}
 
 					item.TableDrivenScenario.TableRowIndex = int32(len(table.Rows) - 1)
+				} else {
+					// The spec was expanded because its context/teardown uses
+					// the spec table, even though this scenario itself does not.
+					// Its table row still belongs in the merged spec table.
+					table.Rows = append(table.Rows, tableRows...)
 				}
 
 				scnResults = append(scnResults, item)
