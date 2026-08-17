@@ -100,8 +100,6 @@ func mergeResults(results []*result.SpecResult) *result.SpecResult {
 						includedTableRowIndexMap[tableRowIndex] = true
 					}
 
-					// Verify if scnearioTableRowIndex is changed somewhere to 0 instead of -1?!
-
 					item.TableDrivenScenario.TableRowIndex = int32(len(table.Rows) - 1)
 				}
 
