@@ -548,3 +548,60 @@ func TestMergeResultsWithSpecTableUsedByContextAndScenarioTableDrivenScenarios(t
 		}
 	}
 }
+
+func TestMergeResults_DuplicateRowBug(t *testing.T) {
+	// TestMergeResults_DuplicateRowBug reproduces a bug where a spec-table row's
+	// data gets appended to the merged table once per non-spec-table-driven
+	// TableDrivenScenario item sharing that result, instead of once per row.
+	// This happens when a spec is expanded per spec-table row because its
+	// Context/TearDownStep references the spec table's columns, but the one
+	// scenario in the spec has its own 2-row scenario-level table and does not
+	// reference the spec columns directly - so both of its expanded copies
+	// within a single spec-row result have IsSpecTableDriven == false.
+
+	makeRes := func(rowCell string) *result.SpecResult {
+		return &result.SpecResult{
+			ProtoSpec: &gm.ProtoSpec{
+				FileName: "spec.spec",
+				Items: []*gm.ProtoItem{
+					{ItemType: gm.ProtoItem_Table, Table: &gm.ProtoTable{
+						Headers: &gm.ProtoTableRow{Cells: []string{"specParam"}},
+						Rows:    []*gm.ProtoTableRow{{Cells: []string{rowCell}}},
+					}},
+					{ItemType: gm.ProtoItem_TableDrivenScenario, TableDrivenScenario: &gm.ProtoTableDrivenScenario{
+						Scenario:              &gm.ProtoScenario{ScenarioHeading: "scenario", ExecutionStatus: gm.ExecutionStatus_PASSED},
+						TableRowIndex:         -1,
+						IsSpecTableDriven:     false,
+						IsScenarioTableDriven: true,
+						ScenarioTableRowIndex: 0,
+					}},
+					{ItemType: gm.ProtoItem_TableDrivenScenario, TableDrivenScenario: &gm.ProtoTableDrivenScenario{
+						Scenario:              &gm.ProtoScenario{ScenarioHeading: "scenario", ExecutionStatus: gm.ExecutionStatus_PASSED},
+						TableRowIndex:         -1,
+						IsSpecTableDriven:     false,
+						IsScenarioTableDriven: true,
+						ScenarioTableRowIndex: 1,
+					}},
+				},
+			},
+		}
+	}
+
+	results := []*result.SpecResult{
+		makeRes("row0"),
+		makeRes("row1"),
+	}
+
+	merged := mergeResults(results)
+
+	var mergedTable *gm.ProtoTable
+	for _, item := range merged.ProtoSpec.Items {
+		if item.ItemType == gm.ProtoItem_Table {
+			mergedTable = item.Table
+		}
+	}
+
+	if len(mergedTable.Rows) != 2 {
+		t.Errorf("expected 2 merged rows (one per spec-table row), got %d: %v", len(mergedTable.Rows), mergedTable.Rows)
+	}
+}

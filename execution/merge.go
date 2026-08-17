@@ -85,6 +85,13 @@ func mergeResults(results []*result.SpecResult) *result.SpecResult {
 
 		var tableRows []*m.ProtoTableRow // nolint
 
+		// This res corresponds to exactly one spec-table row (GetSpecsForDataTableRows
+		// produces one Specification per row). Its row data must be folded into the
+		// merged table at most once, regardless of how many TableDrivenScenario items
+		// within it - spec-driven or not - reference it, so track that per-res rather
+		// than per-item.
+		rowAppended := false
+
 		for _, item := range res.ProtoSpec.Items {
 			switch item.ItemType {
 			case m.ProtoItem_Scenario:
@@ -96,16 +103,23 @@ func mergeResults(results []*result.SpecResult) *result.SpecResult {
 					tableRowIndex := item.TableDrivenScenario.TableRowIndex
 
 					if _, ok := includedTableRowIndexMap[tableRowIndex]; !ok {
-						table.Rows = append(table.Rows, tableRows...)
+						if !rowAppended {
+							table.Rows = append(table.Rows, tableRows...)
+							rowAppended = true
+						}
 						includedTableRowIndexMap[tableRowIndex] = true
 					}
 
 					item.TableDrivenScenario.TableRowIndex = int32(len(table.Rows) - 1)
-				} else {
+				} else if !rowAppended {
 					// The spec was expanded because its context/teardown uses
 					// the spec table, even though this scenario itself does not.
-					// Its table row still belongs in the merged spec table.
+					// Its table row still belongs in the merged spec table -
+					// appended once per res, no matter how many non-spec-table-
+					// driven scenario items (e.g. rows of a scenario's own
+					// scenario-level table) share this same res.
 					table.Rows = append(table.Rows, tableRows...)
+					rowAppended = true
 				}
 
 				scnResults = append(scnResults, item)
@@ -116,6 +130,7 @@ func mergeResults(results []*result.SpecResult) *result.SpecResult {
 				tableRows = item.Table.GetRows()
 				if len(res.GetPreHook()) > 0 {
 					table.Rows = append(table.Rows, tableRows...)
+					rowAppended = true
 				}
 			}
 		}
