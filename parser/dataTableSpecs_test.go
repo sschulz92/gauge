@@ -338,7 +338,7 @@ func TestCreateSpecsForSpecTableRows(t *testing.T) {
 	}
 }
 
-func TestDefaultTableRowIndecesAreSetForScenariosWithoutTableAccess(t *testing.T) {
+func TestDefaultTableRowIndicesAreSetForScenariosWithoutTableAccess(t *testing.T) {
 	specs := []*gauge.Specification{
 		{
 			Heading: &gauge.Heading{},
@@ -402,7 +402,7 @@ func TestDefaultTableRowIndecesAreSetForScenariosWithoutTableAccess(t *testing.T
 	if firstScenario.Heading.Value != "Scenario with spec data table params" {
 		t.Errorf("Wrong name for third scenario, found name: %v", firstScenario.Heading.Value)
 	}
-	isCorrect, errMessage := verifyTableRowIndeces(firstScenario, 0, -1)
+	isCorrect, errMessage := verifyTableRowIndices(firstScenario, 0, -1)
 	if !isCorrect {
 		t.Errorf("%v", errMessage)
 	}
@@ -411,7 +411,7 @@ func TestDefaultTableRowIndecesAreSetForScenariosWithoutTableAccess(t *testing.T
 	if secondScenario.Heading.Value != "Scenario with spec and scenario data table params" {
 		t.Errorf("Wrong name for fourth scenario, found name: %v", secondScenario.Heading.Value)
 	}
-	isCorrect, errMessage = verifyTableRowIndeces(secondScenario, 0, 0)
+	isCorrect, errMessage = verifyTableRowIndices(secondScenario, 0, 0)
 	if !isCorrect {
 		t.Errorf("%v", errMessage)
 	}
@@ -420,7 +420,7 @@ func TestDefaultTableRowIndecesAreSetForScenariosWithoutTableAccess(t *testing.T
 	if thirdScenario.Heading.Value != "Scenario without any data table" {
 		t.Errorf("Wrong name for first scenario, found name: %v", thirdScenario.Heading.Value)
 	}
-	isCorrect, errMessage = verifyTableRowIndeces(thirdScenario, -1, -1)
+	isCorrect, errMessage = verifyTableRowIndices(thirdScenario, -1, -1)
 	if !isCorrect {
 		t.Errorf("%v", errMessage)
 	}
@@ -429,7 +429,7 @@ func TestDefaultTableRowIndecesAreSetForScenariosWithoutTableAccess(t *testing.T
 	if fourthScenario.Heading.Value != "Scenario with scenario data table params" {
 		t.Errorf("Wrong name for second scenario, found name: %v", fourthScenario.Heading.Value)
 	}
-	isCorrect, errMessage = verifyTableRowIndeces(fourthScenario, -1, 0)
+	isCorrect, errMessage = verifyTableRowIndices(fourthScenario, -1, 0)
 	if !isCorrect {
 		t.Errorf("%v", errMessage)
 	}
@@ -443,7 +443,7 @@ func TestDefaultTableRowIndecesAreSetForScenariosWithoutTableAccess(t *testing.T
 	if firstScenarioOfSecondSpec.Heading.Value != "Scenario with spec data table params" {
 		t.Errorf("Wrong name for first scenario of second spec, found name: %v", firstScenarioOfSecondSpec.Heading.Value)
 	}
-	isCorrect, errMessage = verifyTableRowIndeces(firstScenarioOfSecondSpec, 1, -1)
+	isCorrect, errMessage = verifyTableRowIndices(firstScenarioOfSecondSpec, 1, -1)
 	if !isCorrect {
 		t.Errorf("%v", errMessage)
 	}
@@ -452,14 +452,14 @@ func TestDefaultTableRowIndecesAreSetForScenariosWithoutTableAccess(t *testing.T
 	if secondScenarioOfSecondSpec.Heading.Value != "Scenario with spec and scenario data table params" {
 		t.Errorf("Wrong name for first scenario of second spec, found name: %v", secondScenarioOfSecondSpec.Heading.Value)
 	}
-	isCorrect, errMessage = verifyTableRowIndeces(secondScenarioOfSecondSpec, 1, 0)
+	isCorrect, errMessage = verifyTableRowIndices(secondScenarioOfSecondSpec, 1, 0)
 	if !isCorrect {
 		t.Errorf("%v", errMessage)
 	}
 
 }
 
-func verifyTableRowIndeces(scenario *gauge.Scenario, expectedSpecTableRowIndex int, expectedScenarioTableRowIndex int) (bool, string) {
+func verifyTableRowIndices(scenario *gauge.Scenario, expectedSpecTableRowIndex int, expectedScenarioTableRowIndex int) (bool, string) {
 	if scenario.SpecDataTableRowIndex != expectedSpecTableRowIndex {
 		return false, "SpecTableRowIndex is wrong"
 	}
