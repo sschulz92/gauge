@@ -200,7 +200,7 @@ jobs:
   build:
     name: Build ${{ matrix.os }} artifacts
     runs-on: ${{ matrix.os }}
-    needs: [ functional-tests, lsp-tests ]
+    needs: [ functional-tests ]
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
@@ -238,7 +238,7 @@ jobs:
   benchmark:
     name: Benchmark ${{ matrix.project }} | PARALLEL= ${{ matrix.parallel }}
     runs-on: ubuntu-latest
-    needs: [ functional-tests, lsp-tests ]
+    needs: [ functional-tests ]
     if: github.event_name == 'pull_request'
     strategy:
       matrix:
